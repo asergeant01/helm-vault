@@ -110,3 +110,7 @@ venv.bak/
 
 # mac
 .DS_Store
+*.
+*.
+.project
+.pydevproject

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-import src.vault as vault
+import vault.vault as vault
 import ruamel.yaml
 import hvac
 import os
