@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import ruamel.yaml
-
+import shutil
+import glob
 import os
 import getpass
 import glob
@@ -66,14 +67,23 @@ def load_yaml(yaml_file):
         return data
 
 
-def cleanup(args):
+def cleanup(args, clean_up=None):
     # Cleanup decrypted files
     yaml_file = args.yaml_file
     try:
-        os.remove(f"{yaml_file}.dec")
-        if args.verbose is True:
-            print(f"Deleted {yaml_file}.dec")
-            sys.exit()
+        if clean_up:
+            fileList = glob.glob(f'/tmp/{clean_up}*.tgz')
+            for filePath in fileList:
+                try:
+                    os.remove(filePath)
+                except Exception:
+                    print("Error while deleting file : ", filePath)
+            shutil.rmtree(f'/tmp/{clean_up}')
+        else:
+            os.remove(f"{yaml_file}.dec")
+            if args.verbose is True:
+                print(f"Deleted {yaml_file}.dec")
+                sys.exit()
     except AttributeError:
         for fl in glob.glob("*.dec"):
             os.remove(fl)
@@ -112,6 +122,34 @@ def dict_walker(pattern, data, args, envs, path=None):
                 yield res
 
 
+def download_and_expand_packaged_chart(chart, name):
+    subprocess.run(f"helm pull {chart} -d /tmp", shell=True)
+    subprocess.run(f"tar --directory /tmp/ -xf /tmp/{name}*.tgz {name}/values.yaml", shell=True)
+    yaml_file = f"/tmp/{name}/values.yaml"
+
+    return yaml_file
+
+
+def handle_yaml(args, leftovers):
+    yaml_file = args.yaml_file
+    clean_up = None
+
+    if args.action == 'install' and not yaml_file:
+        chart_path = leftovers[-1]
+        chart_name = chart_path.split('/')[-1]
+        clean_up = chart_name
+        yaml_file = download_and_expand_packaged_chart(chart_path, chart_name)
+    elif args.action == "enc":
+        if not os.path.isfile(yaml_file):
+            chart_path = yaml_file
+            chart_name = chart_path.split('/')[-1]
+            clean_up = chart_name
+            yaml_file = download_and_expand_packaged_chart(chart_path, chart_name)
+
+    data = load_yaml(yaml_file)
+    return yaml_file, data, clean_up
+
+
 def main(argv=None):
     # Parse arguments from argparse
     # This is outside of the parse_arg function because of issues returning
@@ -119,8 +157,7 @@ def main(argv=None):
     parsed = parse_args(argv)
     args, leftovers = parsed.parse_known_args(argv)
 
-    yaml_file = args.yaml_file
-    data = load_yaml(yaml_file)
+    yaml_file, data, clean_up = handle_yaml(args, leftovers)
     action = args.action
 
     if action == "clean":
@@ -157,7 +194,7 @@ def main(argv=None):
         except Exception as ex:
             print(f"Error: {ex}")
 
-        cleanup(args)
+        cleanup(args, clean_up)
 
 
 if __name__ == "__main__":
