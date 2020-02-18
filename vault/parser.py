@@ -14,7 +14,7 @@ def parse_args(args):
     VAULT_ADDR:     (The HTTP address of Vault, for example, http://localhost:8200)
     VAULT_TOKEN:    (The token used to authenticate with Vault)
     """, formatter_class=RawTextHelpFormatter)
-    subparsers = parser.add_subparsers(dest="action", required=True)
+    subparsers = parser.add_subparsers(dest="action")
 
     # Encrypt help
     encrypt = subparsers.add_parser("enc", help="Parse a YAML file and store user entered data in Vault")
