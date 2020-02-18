@@ -16,8 +16,8 @@ from parser import parse_args
 
 check_call = subprocess.check_call
 
-if sys.version_info[:2] < (3, 7):
-    raise Exception("Python 3.7 or a more recent version is required.")
+if sys.version_info[:2] < (3, 6):
+    raise Exception("Python 3.6 or a more recent version is required.")
 
 
 class Envs:
