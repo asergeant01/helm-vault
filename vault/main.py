@@ -130,12 +130,19 @@ def download_and_expand_packaged_chart(chart, name):
     return yaml_file
 
 
+def get_chart_path(leftovers):
+    for arg in leftovers:
+        if '/' in arg:
+            return arg
+    return None
+
+
 def handle_yaml(args, leftovers):
     yaml_file = args.yaml_file
     clean_up = None
 
     if args.action == 'install' and not yaml_file:
-        chart_path = leftovers[-1]
+        chart_path = get_chart_path(leftovers)
         chart_name = chart_path.split('/')[-1]
         clean_up = chart_name
         yaml_file = download_and_expand_packaged_chart(chart_path, chart_name)
