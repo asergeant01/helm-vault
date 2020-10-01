@@ -19,6 +19,9 @@ class Vault:
     def vault_write(self, value, path, key):
         # Write to vault, using the correct Vault KV version
         try:
+            if self.args.verbose is True:
+                print(f"Path to be constructed with: {self.envs[1]} {path} {key}")
+                print(os.path.join(self.envs[1], path, key))
             path = os.path.join(self.envs[1], path, key)
 
             if self.kvversion == "v1":
@@ -39,8 +42,8 @@ class Vault:
 #             if self.args.verbose is True:
 #                     print(f"Wrote {value} to: {self.args.mountpoint}/{path}/")
 
-        except AttributeError:
-            print("Vault not configured correctly, check VAULT_ADDR and VAULT_TOKEN env variables.")
+        except AttributeError as e:
+            print(f"Vault not configured correctly, check VAULT_ADDR and VAULT_TOKEN env variables: {e}")
         except Exception as ex:
             print(f"Error: {ex}")
 

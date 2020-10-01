@@ -99,6 +99,9 @@ def cleanup(args, clean_up=None):
 def dict_walker(pattern, data, args, envs, path=None):
     # Walk through the loaded dicts looking for the values we want
     path = path if path is not None else ""
+    if path.startswith('/'):
+        path = path[1:]
+
     action = args.action
     if isinstance(data, dict):
         for key, value in data.items():
@@ -176,7 +179,8 @@ def main(argv=None):
     yaml.preserve_quotes = True
 
     for path, key, value in dict_walker(envs[2], data, args, envs):
-        print("Done")
+        if args.verbose is True:
+            print("Done")
 
     if action == "dec":
         yaml.dump(data, open(f"{yaml_file}.dec", "w"))
